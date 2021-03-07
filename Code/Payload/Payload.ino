@@ -95,7 +95,7 @@ void setup() {
   SERIAL_PORT.begin(115200);
   
   init_imu(true);
-  init_sd_card(true); 
+  init_sd_card(false); 
 
 }
 
@@ -105,8 +105,8 @@ void loop() {
   if( myICM.dataReady() ){
     myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
     //printRawAGMT( myICM.agmt );     // Uncomment this to see the raw values, taken directly from the agmt structure
-    //printScaledAGMT( myICM.agmt);   // This function takes into account the sclae settings from when the measurement was made to calculate the values with units
-    logScaledAGMT( myICM.agmt);
+    printScaledAGMT( myICM.agmt);   // This function takes into account the sclae settings from when the measurement was made to calculate the values with units
+    //logScaledAGMT( myICM.agmt);
     delay(30);
 
   }else{
