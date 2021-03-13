@@ -10,6 +10,7 @@
  * 
  * Distributed as-is; no warranty is given.
  ***************************************************************/
+#include "TeensyThreads.h"
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 #include <SD.h>
 
@@ -34,7 +35,7 @@
 #endif
 
 
-void init_imu(bool flag)
+bool Init_Imu(bool flag)
 {
   if (flag)
   {
@@ -66,11 +67,16 @@ void init_imu(bool flag)
           initialized = true;
         }
       }
+
+  return initialized;
   }
+
+  return false;
+
 }
 
 
-void init_sd_card(bool flag)
+void Init_Sd_Card(bool flag, bool imu_flag)
 {
   // wait for Serial Monitor to connect. Needed for native USB port boards only:
   if (flag)
@@ -78,15 +84,22 @@ void init_sd_card(bool flag)
   while (!Serial);
   Serial.print("Initializing SD card...");
 
-    if (!SD.begin(BUILTIN_SDCARD)) {
-    Serial.println("initialization failed. Things to check:");
-    Serial.println("1. is a card inserted?");
-    Serial.println("2. is your wiring correct?");
-    Serial.println("Note: press reset or reopen this serial monitor after fixing your issue!");
-    while (true);
-  }
+    if (!SD.begin(BUILTIN_SDCARD)) 
+    {
+      Serial.println("initialization failed. Things to check:");
+      Serial.println("1. is a card inserted?");
+      Serial.println("2. is your wiring correct?");
+      Serial.println("Note: press reset or reopen this serial monitor after fixing your issue!");
+      while (true);
+    }
   
+    if(imu_flag) 
+    {
+      threads.addThread(ImuThreadLogger); 
+    }
+
   Serial.println("initialization done."); 
+  
   }
 }
 
@@ -94,30 +107,55 @@ void init_sd_card(bool flag)
 void setup() {
   SERIAL_PORT.begin(115200);
   
-  init_imu(true);
-  init_sd_card(false); 
+  bool imu_is_initialized = Init_Imu(true);
+  Init_Sd_Card(true, imu_is_initialized); 
 
 }
 
 void loop() {
 
   
-  if( myICM.dataReady() ){
+  if( myICM.dataReady() )
+  {
     myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
     //printRawAGMT( myICM.agmt );     // Uncomment this to see the raw values, taken directly from the agmt structure
     printScaledAGMT( myICM.agmt);   // This function takes into account the sclae settings from when the measurement was made to calculate the values with units
     //logScaledAGMT( myICM.agmt);
     delay(30);
 
-  }else{
-    Serial.println("Waiting for data");
-    delay(500);
   }
-
+    else
+    {
+      Serial.println("Waiting for data");
+      delay(500);
+    }
+  
 }
 
 
-void logger(String dataString)
+void ImuThreadLogger() 
+{
+  while(1)
+  {
+    if( myICM.dataReady() )
+    {
+      myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
+      //printRawAGMT( myICM.agmt );     // Uncomment this to see the raw values, taken directly from the agmt structure
+      //printScaledAGMT( myICM.agmt);   // This function takes into account the sclae settings from when the measurement was made to calculate the values with units
+      LogScaledAGMT( myICM.agmt);
+      threads.delay(30);
+  }
+    else
+    {
+      Serial.println("Thread: Waiting for data");
+      threads.delay(500);
+    }
+    threads.yield();
+  }
+}
+
+
+void Logger(String dataString)
 {
  // log data 
  File dataFile = SD.open("datalog.txt", FILE_WRITE);
@@ -127,7 +165,7 @@ void logger(String dataString)
   dataFile.print(dataString);
   dataFile.close();
   // print to the serial port too:
-  Serial.print(dataString);
+  //Serial.print(dataString);
   }
   // if the file isn't open, pop up an error:
   else {
@@ -135,12 +173,12 @@ void logger(String dataString)
   }
 }
 
-void logFormattedFloat(float val, uint8_t leading, uint8_t decimals){
+void LogFormattedFloat(float val, uint8_t leading, uint8_t decimals){
   float aval = abs(val);
   if(val < 0){
-    logger("-");
+    Logger("-");
   }else{
-    logger(" ");
+    Logger(" ");
   }
   for( uint8_t indi = 0; indi < leading; indi++ ){
     uint32_t tenpow = 0;
@@ -151,44 +189,44 @@ void logFormattedFloat(float val, uint8_t leading, uint8_t decimals){
       tenpow *= 10;
     }
     if( aval < tenpow){
-      logger("0");
+      Logger("0");
     }else{
       break;
     }
   }
   if(val < 0){
     //SERIAL_PORT.print(-val, decimals);
-    logger(String(-val, decimals));
+    Logger(String(-val, decimals));
   }else{
     //SERIAL_PORT.print(val, decimals);
-    logger(String(val, decimals));
+    Logger(String(val, decimals));
   }
 }
 
-void logScaledAGMT(ICM_20948_AGMT_t agmt)
+void LogScaledAGMT(ICM_20948_AGMT_t agmt)
 {
-  logger("Scaled. Acc (mg) [ ");
-  logFormattedFloat( myICM.accX(), 5, 2 );
-  logger(", ");
-  logFormattedFloat( myICM.accY(), 5, 2 );
-  logger(", ");
-  logFormattedFloat( myICM.accZ(), 5, 2 );
-  logger(" ], Gyr (DPS) [ ");
-  logFormattedFloat( myICM.gyrX(), 5, 2 );
-  logger(", ");
-  logFormattedFloat( myICM.gyrY(), 5, 2 );
-  logger(", ");
-  logFormattedFloat( myICM.gyrZ(), 5, 2 );
-  logger(" ], Mag (uT) [ ");
-  logFormattedFloat( myICM.magX(), 5, 2 );
-  logger(", ");
-  logFormattedFloat( myICM.magY(), 5, 2 );
-  logger(", ");
-  logFormattedFloat( myICM.magZ(), 5, 2 );
-  logger(" ], Tmp (C) [ ");
-  logFormattedFloat( myICM.temp(), 5, 2 );
-  logger(" ]");
-  logger("\n");
+  Logger("Scaled. Acc (mg) [ ");
+  LogFormattedFloat( myICM.accX(), 5, 2 );
+  Logger(", ");
+  LogFormattedFloat( myICM.accY(), 5, 2 );
+  Logger(", ");
+  LogFormattedFloat( myICM.accZ(), 5, 2 );
+  Logger(" ], Gyr (DPS) [ ");
+  LogFormattedFloat( myICM.gyrX(), 5, 2 );
+  Logger(", ");
+  LogFormattedFloat( myICM.gyrY(), 5, 2 );
+  Logger(", ");
+  LogFormattedFloat( myICM.gyrZ(), 5, 2 );
+  Logger(" ], Mag (uT) [ ");
+  LogFormattedFloat( myICM.magX(), 5, 2 );
+  Logger(", ");
+  LogFormattedFloat( myICM.magY(), 5, 2 );
+  Logger(", ");
+  LogFormattedFloat( myICM.magZ(), 5, 2 );
+  Logger(" ], Tmp (C) [ ");
+  LogFormattedFloat( myICM.temp(), 5, 2 );
+  Logger(" ]");
+  Logger("\n");
 }
 
 // Below here are some helper functions to print the data nicely!
