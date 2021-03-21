@@ -21,17 +21,20 @@
 // The 'nominal' 0-degrees-C resistance of the sensor
 // 100.0 for PT100, 1000.0 for PT1000
 #define RNOMINAL  100.0
-#define CS_PIN 37
+#define CS_PIN 10
 
 // Use software SPI: CS, DI, DO, CLK
-Adafruit_MAX31865 thermo = Adafruit_MAX31865(CS_PIN, 36, 35, 34);
+//Adafruit_MAX31865 thermo = Adafruit_MAX31865(CS_PIN, 36, 35, 34);
+//Adafruit_MAX31865 thermo = Adafruit_MAX31865(10, 11, 12, 13);
+//Adafruit_MAX31865 thermo = Adafruit_MAX31865(10, 9, 8, 7);
 // use hardware SPI, just pass in the CS pin
-//Adafruit_MAX31865 thermo = Adafruit_MAX31865(10);
-//Adafruit_MAX31865 thermo = Adafruit_MAX31865(CS_PIN);
+//Adafruit_MAX31865 thermo = Adafruit_MAX31865(SCL);
+Adafruit_MAX31865 thermo = Adafruit_MAX31865(CS_PIN);
 
 
 void setup() {
-  Serial.begin(115200);
+  //Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println("Adafruit MAX31865 PT100 Sensor Test!");
 
   thermo.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary

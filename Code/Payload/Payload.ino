@@ -15,8 +15,10 @@
 #include <SD.h>
 
 //const int chipSelect = 10;
+#define LOGNAME "datalog.txt"
 
 //#define USE_SPI       // Uncomment this to use SPI
+
 
 #define SERIAL_PORT Serial
 
@@ -97,6 +99,7 @@ void Init_Sd_Card(bool flag, bool imu_flag)
     {
       threads.addThread(ImuThreadLogger); 
     }
+    threads.addThread(BLogger);
 
   Serial.println("initialization done."); 
   
@@ -108,7 +111,7 @@ void setup() {
   SERIAL_PORT.begin(115200);
   
   bool imu_is_initialized = Init_Imu(true);
-  Init_Sd_Card(true, imu_is_initialized); 
+  Init_Sd_Card(false, imu_is_initialized); 
 
 }
 
@@ -124,14 +127,37 @@ void loop() {
     delay(30);
 
   }
-    else
-    {
-      Serial.println("Waiting for data");
-      delay(500);
-    }
+  else
+  {
+    Serial.println("Waiting for data");
+    delay(500);
+  }
   
 }
 
+
+void BLogger()
+{
+ Threads::Mutex sd_card_lock; 
+ sd_card_lock.lock();
+ // log data 
+ File dataFile = SD.open(LOGNAME, FILE_WRITE);
+
+  // if the file is available, write to it:
+  if (dataFile) {
+  dataFile.print("BBB");
+  dataFile.close();
+  // print to the serial port too:
+  //Serial.print(dataString);
+  }
+  // if the file isn't open, pop up an error:
+  else {
+    Serial.print("error opening datalog.txt");
+  }
+  sd_card_lock.unlock();
+  threads.delay(30);
+  threads.yield();
+}
 
 void ImuThreadLogger() 
 {
@@ -157,8 +183,10 @@ void ImuThreadLogger()
 
 void Logger(String dataString)
 {
+ Threads::Mutex sd_card_lock; 
+ Threads::Scope scope(sd_card_lock); // lock on creation
  // log data 
- File dataFile = SD.open("datalog.txt", FILE_WRITE);
+ File dataFile = SD.open(LOGNAME, FILE_WRITE);
 
   // if the file is available, write to it:
   if (dataFile) {
@@ -171,7 +199,7 @@ void Logger(String dataString)
   else {
     Serial.println("error opening datalog.txt");
   }
-}
+} // unlock at destruction
 
 void LogFormattedFloat(float val, uint8_t leading, uint8_t decimals){
   float aval = abs(val);
