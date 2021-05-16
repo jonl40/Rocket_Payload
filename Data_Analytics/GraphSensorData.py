@@ -45,7 +45,8 @@ for col in data_dq:
 plt.grid()
 #legend 
 plt.legend() 
-mng = plt.get_current_fig_manager()
-mng.full_screen_toggle()
+fig.set_size_inches(12, 9)
+fig.savefig("RTD.svg", dpi = 100)
+fig.savefig("RTD.png", dpi = 100)
 plt.savefig("RTD_test.png", bbox_inches='tight')
 plt.show()

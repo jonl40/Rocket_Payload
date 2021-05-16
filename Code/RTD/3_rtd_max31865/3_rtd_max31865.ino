@@ -26,8 +26,8 @@
 #define CS_PIN1 10
 #define CS_PIN2 37
 #define CS_PIN3 36
-#define CSVNAME "RTD.csv"
-#define CSVHEADER "DateTime , RTD1 (°C), RTD2 (°C), RTD3 (°C)"
+#define CSVNAME "RTD1.csv"
+#define CSVHEADER "DateTime,RTD1_(C),RTD2_(C),RTD3_(C)"
 
 Adafruit_MAX31865 thermo1 = Adafruit_MAX31865(CS_PIN1);
 Adafruit_MAX31865 thermo2 = Adafruit_MAX31865(CS_PIN2);
