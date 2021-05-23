@@ -8,52 +8,80 @@ import pandas as pd
 CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
-SENSOR_DATA = "RTD1.csv"
-DATA_SVG = "RTD1.svg"
-DATA_PNG = "RTD1.png"
+SENSOR_DATA = "IMU.csv"
+DATA_SVG = "IMU.svg"
+DATA_PNG = "IMU.png"
 
 
 df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
-df.head()
-ax = df.plot(title="RTD temperature (°C)", grid=True, marker='.', markersize=10)
+print(df.head())
+ax = df.plot(title="IMU Data", grid=True, marker='.', markersize=10)
 ax.set_xlabel("DateTime")
-ax.set_ylabel("Temperature (°C)")
 fig = ax.get_figure()
 fig.set_size_inches(12, 9)
 fig.savefig(DATA_SVG, dpi = 100)
 fig.savefig(DATA_PNG, dpi = 100)
 
 # %%
+import os  
+import pandas as pd
 
-# RTD1
-print("RTD1")
+CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
+os.chdir(CUR_FOLDER)
+
+SENSOR_DATA = "IMU.csv"
+# Acc
+print("Acc")
 
 df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
-ax = df['RTD1_(C)'].plot(title="RTD1 temperature (°C)", grid=True, marker='.', markersize=10)
+print(df.head())
+df_acc = pd.DataFrame()
+df_acc = pd.concat([df_acc, df['Scaled_Acc_X_(mg)'], df['Scaled_Acc_Y_(mg)'], df['Scaled_Acc_Z_(mg)']], axis=1)
+ax = df_acc.plot(title="IMU Scaled Acc (mg)", grid=True, marker='.', markersize=10)
 ax.set_xlabel("DateTime")
-ax.set_ylabel("Temperature (°C)")
+ax.set_ylabel("Scaled Acc (mg)")
 
 # %%
+import os  
+import pandas as pd
 
+CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
+os.chdir(CUR_FOLDER)
+
+SENSOR_DATA = "IMU.csv"
 # RTD2
 print("RTD2")
 
 df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
+print(df.head())
 ax = df['RTD2_(C)'].plot(title="RTD2 temperature (°C)", grid=True, marker='.', markersize=10)
 ax.set_xlabel("DateTime")
 ax.set_ylabel("Temperature (°C)")
 
 # %%
+import os  
+import pandas as pd
 
+CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
+os.chdir(CUR_FOLDER)
+
+SENSOR_DATA = "IMU.csv"
 # RTD3
 print("RTD3")
 
 df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
-ax = df['RTD3_(C)'].plot(title="RTD3 temperature (°C)", grid=True, marker='.', markersize=10)
+print(df.head())
+ax = df[['Gyr_X_(DPS)', 'Gyr_Y_(DPS)', 'Gyr_Z_(DPS)']].plot(title="IMU Gyr (DPS)", grid=True, marker='.', markersize=10)
 ax.set_xlabel("DateTime")
-ax.set_ylabel("Temperature (°C)")
+ax.set_ylabel("Gyr (DPS)")
 # %%
+import os  
+import pandas as pd
 
+CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
+os.chdir(CUR_FOLDER)
+
+SENSOR_DATA = "IMU.csv"
 # subplot
 print("subplot")
 
@@ -61,7 +89,13 @@ df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
 df.head()
 axs = df.plot(figsize=(12, 4), subplots=True, title="RTD temperature (°C) subplot")
 # %%
+import os  
+import pandas as pd
 
+CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
+os.chdir(CUR_FOLDER)
+
+SENSOR_DATA = "IMU.csv"
 # area
 print("area")
 

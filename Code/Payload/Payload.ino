@@ -10,12 +10,14 @@
  * 
  * Distributed as-is; no warranty is given.
  ***************************************************************/
-#include "TeensyThreads.h"
+// #include "TeensyThreads.h"
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 #include <SD.h>
+#include <TimeLib.h>
 
 //const int chipSelect = 10;
-#define LOGNAME "datalog.txt"
+#define IMU_CSV_NAME "imu.csv"
+#define IMU_HEADER_CSV "DateTime,Scaled_Acc_X_(mg),Scaled_Acc_Y_(mg),Scaled_Acc_Z_(mg),Gyr_X_(DPS),Gyr_Y_(DPS),Gyr_Z_(DPS),Mag_X_(uT),Mag_Y_(uT),Mag_Z_(uT),Tmp_(C)\n"
 
 //#define USE_SPI       // Uncomment this to use SPI
 
@@ -94,12 +96,15 @@ void Init_Sd_Card(bool flag, bool imu_flag)
       Serial.println("Note: press reset or reopen this serial monitor after fixing your issue!");
       while (true);
     }
-  
+    // write header of csv
+    Logger(IMU_HEADER_CSV);
+
+    /*
     if(imu_flag) 
     {
       threads.addThread(ImuThreadLogger); 
     }
-    threads.addThread(BLogger);
+    */
 
   Serial.println("initialization done."); 
   
@@ -111,19 +116,18 @@ void setup() {
   SERIAL_PORT.begin(115200);
   
   bool imu_is_initialized = Init_Imu(true);
-  Init_Sd_Card(false, imu_is_initialized); 
+  Init_Sd_Card(true, imu_is_initialized); 
 
 }
 
 void loop() {
 
-  
   if( myICM.dataReady() )
   {
     myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
     //printRawAGMT( myICM.agmt );     // Uncomment this to see the raw values, taken directly from the agmt structure
-    printScaledAGMT( myICM.agmt);   // This function takes into account the sclae settings from when the measurement was made to calculate the values with units
-    //logScaledAGMT( myICM.agmt);
+    //printScaledAGMT( myICM.agmt);   // This function takes into account the scale settings from when the measurement was made to calculate the values with units
+    LogCsvScaledAGMT(myICM.agmt);
     delay(30);
 
   }
@@ -132,33 +136,10 @@ void loop() {
     Serial.println("Waiting for data");
     delay(500);
   }
-  
+
 }
 
-
-void BLogger()
-{
- Threads::Mutex sd_card_lock; 
- sd_card_lock.lock();
- // log data 
- File dataFile = SD.open(LOGNAME, FILE_WRITE);
-
-  // if the file is available, write to it:
-  if (dataFile) {
-  dataFile.print("BBB");
-  dataFile.close();
-  // print to the serial port too:
-  //Serial.print(dataString);
-  }
-  // if the file isn't open, pop up an error:
-  else {
-    Serial.print("error opening datalog.txt");
-  }
-  sd_card_lock.unlock();
-  threads.delay(30);
-  threads.yield();
-}
-
+/*
 void ImuThreadLogger() 
 {
   while(1)
@@ -166,9 +147,8 @@ void ImuThreadLogger()
     if( myICM.dataReady() )
     {
       myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
-      //printRawAGMT( myICM.agmt );     // Uncomment this to see the raw values, taken directly from the agmt structure
       //printScaledAGMT( myICM.agmt);   // This function takes into account the sclae settings from when the measurement was made to calculate the values with units
-      LogScaledAGMT( myICM.agmt);
+      LogCsvScaledAGMT(myICM.agmt);
       threads.delay(30);
   }
     else
@@ -179,14 +159,13 @@ void ImuThreadLogger()
     threads.yield();
   }
 }
+*/
 
 
 void Logger(String dataString)
 {
- Threads::Mutex sd_card_lock; 
- Threads::Scope scope(sd_card_lock); // lock on creation
  // log data 
- File dataFile = SD.open(LOGNAME, FILE_WRITE);
+ File dataFile = SD.open(IMU_CSV_NAME, FILE_WRITE);
 
   // if the file is available, write to it:
   if (dataFile) {
@@ -197,9 +176,10 @@ void Logger(String dataString)
   }
   // if the file isn't open, pop up an error:
   else {
-    Serial.println("error opening datalog.txt");
+    Serial.println("error opening IMU_CSV_NAME");
   }
-} // unlock at destruction
+}
+
 
 void LogFormattedFloat(float val, uint8_t leading, uint8_t decimals){
   float aval = abs(val);
@@ -231,31 +211,50 @@ void LogFormattedFloat(float val, uint8_t leading, uint8_t decimals){
   }
 }
 
-void LogScaledAGMT(ICM_20948_AGMT_t agmt)
+
+// "DateTime,Scaled_Acc_X_(mg),Scaled_Acc_Y_(mg),Scaled_Acc_Z_(mg),Gyr_X_(DPS),Gyr_Y_(DPS),Gyr_Z_(DPS),Mag_X_(uT),Mag_Y_(uT),Mag_Z_(uT),Tmp_(C)"
+void LogCsvScaledAGMT(ICM_20948_AGMT_t agmt)
 {
-  Logger("Scaled. Acc (mg) [ ");
+  // log date time 
+  Logger(year()); 
+  Logger("-");
+  Logger(month());
+  Logger("-");
+  Logger(day());
+  Logger(" ");
+  Logger(hour());
+  Logger(":");
+  Logger(minute());
+  Logger(":");
+  Logger(second());
+  Logger(",");
+  // Scaled Acc (mg)
   LogFormattedFloat( myICM.accX(), 5, 2 );
-  Logger(", ");
+  Logger(",");
   LogFormattedFloat( myICM.accY(), 5, 2 );
-  Logger(", ");
+  Logger(",");
   LogFormattedFloat( myICM.accZ(), 5, 2 );
-  Logger(" ], Gyr (DPS) [ ");
+  // gyr(DPS)
+  Logger(", ");
   LogFormattedFloat( myICM.gyrX(), 5, 2 );
-  Logger(", ");
+  Logger(",");
   LogFormattedFloat( myICM.gyrY(), 5, 2 );
-  Logger(", ");
+  Logger(",");
   LogFormattedFloat( myICM.gyrZ(), 5, 2 );
-  Logger(" ], Mag (uT) [ ");
+  // mag (uT)
+  Logger(",");
   LogFormattedFloat( myICM.magX(), 5, 2 );
-  Logger(", ");
+  Logger(",");
   LogFormattedFloat( myICM.magY(), 5, 2 );
-  Logger(", ");
+  Logger(",");
   LogFormattedFloat( myICM.magZ(), 5, 2 );
-  Logger(" ], Tmp (C) [ ");
+  // tmp (C)
+  Logger(",");
   LogFormattedFloat( myICM.temp(), 5, 2 );
-  Logger(" ]");
   Logger("\n");
+  Serial.println("Logging");
 }
+
 
 // Below here are some helper functions to print the data nicely!
 void printPaddedInt16b( int16_t val ){
@@ -273,31 +272,6 @@ void printPaddedInt16b( int16_t val ){
     if(abs(val) < 10   ){ SERIAL_PORT.print("0"); }
   }
   SERIAL_PORT.print(abs(val));
-}
-
-void printRawAGMT( ICM_20948_AGMT_t agmt){
-  SERIAL_PORT.print("RAW. Acc [ ");
-  printPaddedInt16b( agmt.acc.axes.x );
-  SERIAL_PORT.print(", ");
-  printPaddedInt16b( agmt.acc.axes.y );
-  SERIAL_PORT.print(", ");
-  printPaddedInt16b( agmt.acc.axes.z );
-  SERIAL_PORT.print(" ], Gyr [ ");
-  printPaddedInt16b( agmt.gyr.axes.x );
-  SERIAL_PORT.print(", ");
-  printPaddedInt16b( agmt.gyr.axes.y );
-  SERIAL_PORT.print(", ");
-  printPaddedInt16b( agmt.gyr.axes.z );
-  SERIAL_PORT.print(" ], Mag [ ");
-  printPaddedInt16b( agmt.mag.axes.x );
-  SERIAL_PORT.print(", ");
-  printPaddedInt16b( agmt.mag.axes.y );
-  SERIAL_PORT.print(", ");
-  printPaddedInt16b( agmt.mag.axes.z );
-  SERIAL_PORT.print(" ], Tmp [ ");
-  printPaddedInt16b( agmt.tmp.val );
-  SERIAL_PORT.print(" ]");
-  SERIAL_PORT.println();
 }
 
 
@@ -328,6 +302,7 @@ void printFormattedFloat(float val, uint8_t leading, uint8_t decimals){
     SERIAL_PORT.print(val, decimals);
   }
 }
+
 
 void printScaledAGMT( ICM_20948_AGMT_t agmt){
   SERIAL_PORT.print("Scaled. Acc (mg) [ ");
