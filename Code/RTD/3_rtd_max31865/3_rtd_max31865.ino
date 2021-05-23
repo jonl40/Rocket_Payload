@@ -65,8 +65,8 @@ void Write_Header()
 
 void setup() 
 {
-  //Serial.begin(115200);
-  Serial.begin(9600);
+  Serial.begin(115200);
+  //Serial.begin(9600);
 
   Init_Sd_Card(true);
   Write_Header();
