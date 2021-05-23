@@ -1,6 +1,6 @@
 # %%
 # ipython in vscode
-print("plot")
+print("IMU")
 
 import os  
 import pandas as pd
@@ -30,16 +30,21 @@ CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
 SENSOR_DATA = "IMU.csv"
-# Acc
-print("Acc")
+ACC_SVG = "ACC.svg"
+ACC_PNG = "ACC.png"
+# Acc (mg)
+print("Acc (mg)")
 
 df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
-print(df.head())
 df_acc = pd.DataFrame()
 df_acc = pd.concat([df_acc, df['Scaled_Acc_X_(mg)'], df['Scaled_Acc_Y_(mg)'], df['Scaled_Acc_Z_(mg)']], axis=1)
 ax = df_acc.plot(title="IMU Scaled Acc (mg)", grid=True, marker='.', markersize=10)
 ax.set_xlabel("DateTime")
 ax.set_ylabel("Scaled Acc (mg)")
+fig = ax.get_figure()
+fig.set_size_inches(12, 9)
+fig.savefig(ACC_SVG, dpi = 100)
+fig.savefig(ACC_PNG, dpi = 100)
 
 # %%
 import os  
@@ -49,31 +54,20 @@ CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
 SENSOR_DATA = "IMU.csv"
-# RTD2
-print("RTD2")
+GYR_SVG = "GYR.svg"
+GYR_PNG = "GYR.png"
+# Gyr (DPS)
+print("Gyr (DPS)")
 
 df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
-print(df.head())
-ax = df['RTD2_(C)'].plot(title="RTD2 temperature (°C)", grid=True, marker='.', markersize=10)
-ax.set_xlabel("DateTime")
-ax.set_ylabel("Temperature (°C)")
-
-# %%
-import os  
-import pandas as pd
-
-CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
-os.chdir(CUR_FOLDER)
-
-SENSOR_DATA = "IMU.csv"
-# RTD3
-print("RTD3")
-
-df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
-print(df.head())
 ax = df[['Gyr_X_(DPS)', 'Gyr_Y_(DPS)', 'Gyr_Z_(DPS)']].plot(title="IMU Gyr (DPS)", grid=True, marker='.', markersize=10)
 ax.set_xlabel("DateTime")
 ax.set_ylabel("Gyr (DPS)")
+fig = ax.get_figure()
+fig.set_size_inches(12, 9)
+fig.savefig(GYR_SVG, dpi = 100)
+fig.savefig(GYR_PNG, dpi = 100)
+
 # %%
 import os  
 import pandas as pd
@@ -82,12 +76,19 @@ CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
 SENSOR_DATA = "IMU.csv"
-# subplot
-print("subplot")
+MAG_SVG = "MAG.svg"
+MAG_PNG = "MAG.png"
+# Mag (uT)
+print("Mag (uT)")
 
 df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
-df.head()
-axs = df.plot(figsize=(12, 4), subplots=True, title="RTD temperature (°C) subplot")
+ax = df[['Mag_X_(uT)', 'Mag_Y_(uT)', 'Mag_Z_(uT)']].plot(title="IMU Mag (uT)", grid=True, marker='.', markersize=10)
+ax.set_xlabel("DateTime")
+ax.set_ylabel("Mag (uT)")
+fig = ax.get_figure()
+fig.set_size_inches(12, 9)
+fig.savefig(MAG_SVG, dpi = 100)
+fig.savefig(MAG_PNG, dpi = 100)
 # %%
 import os  
 import pandas as pd
@@ -96,15 +97,18 @@ CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
 SENSOR_DATA = "IMU.csv"
-# area
-print("area")
-
-import matplotlib.pyplot as plt
+TMP_SVG = "TMP.svg"
+TMP_PNG = "TMP.png"
+# Tmp (C)
+print("Tmp (C)")
 
 df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
-df.head()
-fig, axs = plt.subplots(figsize=(12, 4))
-df.plot.area(ax=axs, subplots=True, title="RTD temperature (°C) subplot")
-axs.set_ylabel("Temperature (°C)")
+ax = df['Tmp_(C)'].plot(title="IMU Tmp (C)", grid=True, marker='.', markersize=10)
+ax.set_xlabel("DateTime")
+ax.set_ylabel("Tmp_(C)")
+fig = ax.get_figure()
+fig.set_size_inches(12, 9)
+fig.savefig(TMP_SVG, dpi = 100)
+fig.savefig(TMP_PNG, dpi = 100)
 # %%
 
