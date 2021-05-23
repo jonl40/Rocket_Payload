@@ -97,7 +97,7 @@ void Init_Sd_Card(bool flag, bool imu_flag)
       while (true);
     }
     // write header of csv
-    Logger(IMU_HEADER_CSV);
+    LogToCSV(IMU_HEADER_CSV);
 
     /*
     if(imu_flag) 
@@ -121,22 +121,7 @@ void setup() {
 }
 
 void loop() {
-
-  if( myICM.dataReady() )
-  {
-    myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
-    //printRawAGMT( myICM.agmt );     // Uncomment this to see the raw values, taken directly from the agmt structure
-    //printScaledAGMT( myICM.agmt);   // This function takes into account the scale settings from when the measurement was made to calculate the values with units
-    LogCsvScaledAGMT(myICM.agmt);
-    delay(30);
-
-  }
-  else
-  {
-    Serial.println("Waiting for data");
-    delay(500);
-  }
-
+  LogSensorData();
 }
 
 /*
@@ -161,8 +146,26 @@ void ImuThreadLogger()
 }
 */
 
+void LogSensorData()
+{
+  if( myICM.dataReady() )
+  {
+    myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
+    //printRawAGMT( myICM.agmt );     // Uncomment this to see the raw values, taken directly from the agmt structure
+    //printScaledAGMT( myICM.agmt);   // This function takes into account the scale settings from when the measurement was made to calculate the values with units
+    LogTimeToCSV();
+    LogCsvScaledAGMT(myICM.agmt);
+    delay(30);
+  }
+  else
+  {
+    Serial.println("Waiting for data");
+    delay(500);
+  }
+}
 
-void Logger(String dataString)
+
+void LogToCSV(String dataString)
 {
  // log data 
  File dataFile = SD.open(IMU_CSV_NAME, FILE_WRITE);
@@ -184,9 +187,9 @@ void Logger(String dataString)
 void LogFormattedFloat(float val, uint8_t leading, uint8_t decimals){
   float aval = abs(val);
   if(val < 0){
-    Logger("-");
+    LogToCSV("-");
   }else{
-    Logger(" ");
+    LogToCSV(" ");
   }
   for( uint8_t indi = 0; indi < leading; indi++ ){
     uint32_t tenpow = 0;
@@ -197,61 +200,67 @@ void LogFormattedFloat(float val, uint8_t leading, uint8_t decimals){
       tenpow *= 10;
     }
     if( aval < tenpow){
-      Logger("0");
+      LogToCSV("0");
     }else{
       break;
     }
   }
   if(val < 0){
     //SERIAL_PORT.print(-val, decimals);
-    Logger(String(-val, decimals));
+    LogToCSV(String(-val, decimals));
   }else{
     //SERIAL_PORT.print(val, decimals);
-    Logger(String(val, decimals));
+    LogToCSV(String(val, decimals));
   }
+}
+
+void LogTimeToCSV()
+{
+  // log date time 
+  LogToCSV(year()); 
+  LogToCSV("-");
+  LogToCSV(month());
+  LogToCSV("-");
+  LogToCSV(day());
+  LogToCSV(" ");
+  LogToCSV(hour());
+  LogToCSV(":");
+  LogToCSV(minute());
+  LogToCSV(":");
+  LogToCSV(second());
+  LogToCSV(".");
+  LogToCSV(millis());
+  LogToCSV(",");
 }
 
 
 // "DateTime,Scaled_Acc_X_(mg),Scaled_Acc_Y_(mg),Scaled_Acc_Z_(mg),Gyr_X_(DPS),Gyr_Y_(DPS),Gyr_Z_(DPS),Mag_X_(uT),Mag_Y_(uT),Mag_Z_(uT),Tmp_(C)"
 void LogCsvScaledAGMT(ICM_20948_AGMT_t agmt)
 {
-  // log date time 
-  Logger(year()); 
-  Logger("-");
-  Logger(month());
-  Logger("-");
-  Logger(day());
-  Logger(" ");
-  Logger(hour());
-  Logger(":");
-  Logger(minute());
-  Logger(":");
-  Logger(second());
-  Logger(",");
   // Scaled Acc (mg)
   LogFormattedFloat( myICM.accX(), 5, 2 );
-  Logger(",");
+  LogToCSV(",");
   LogFormattedFloat( myICM.accY(), 5, 2 );
-  Logger(",");
+  LogToCSV(",");
   LogFormattedFloat( myICM.accZ(), 5, 2 );
   // gyr(DPS)
-  Logger(", ");
+  LogToCSV(", ");
   LogFormattedFloat( myICM.gyrX(), 5, 2 );
-  Logger(",");
+  LogToCSV(",");
   LogFormattedFloat( myICM.gyrY(), 5, 2 );
-  Logger(",");
+  LogToCSV(",");
   LogFormattedFloat( myICM.gyrZ(), 5, 2 );
   // mag (uT)
-  Logger(",");
+  LogToCSV(",");
   LogFormattedFloat( myICM.magX(), 5, 2 );
-  Logger(",");
+  LogToCSV(",");
   LogFormattedFloat( myICM.magY(), 5, 2 );
-  Logger(",");
+  LogToCSV(",");
   LogFormattedFloat( myICM.magZ(), 5, 2 );
   // tmp (C)
-  Logger(",");
+  LogToCSV(",");
   LogFormattedFloat( myICM.temp(), 5, 2 );
-  Logger("\n");
+  LogToCSV("\n");
   Serial.println("Logging");
 }
 
