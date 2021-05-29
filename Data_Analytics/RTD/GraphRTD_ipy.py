@@ -8,9 +8,9 @@ import pandas as pd
 CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
-SENSOR_DATA = "RTD1.csv"
-DATA_SVG = "RTD1.svg"
-DATA_PNG = "RTD1.png"
+SENSOR_DATA = "RTD.csv"
+DATA_SVG = "RTD.svg"
+DATA_PNG = "RTD.png"
 
 
 df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
@@ -30,7 +30,7 @@ import pandas as pd
 CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
-SENSOR_DATA = "RTD1.csv"
+SENSOR_DATA = "RTD.csv"
 # RTD1
 print("RTD1")
 
@@ -46,7 +46,7 @@ import pandas as pd
 CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
-SENSOR_DATA = "RTD1.csv"
+SENSOR_DATA = "RTD.csv"
 # RTD2
 print("RTD2")
 
@@ -62,7 +62,7 @@ import pandas as pd
 CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
-SENSOR_DATA = "RTD1.csv"
+SENSOR_DATA = "RTD.csv"
 # RTD3
 print("RTD3")
 
@@ -77,7 +77,7 @@ import pandas as pd
 CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
-SENSOR_DATA = "RTD1.csv"
+SENSOR_DATA = "RTD.csv"
 # subplot
 print("subplot")
 
@@ -91,7 +91,7 @@ import pandas as pd
 CUR_FOLDER = os.path.dirname(os.path.abspath(__file__))
 os.chdir(CUR_FOLDER)
 
-SENSOR_DATA = "RTD1.csv"
+SENSOR_DATA = "RTD.csv"
 # area
 print("area")
 

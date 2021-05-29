@@ -17,10 +17,10 @@
 #include <TimeLib.h>
 
 //const int chipSelect = 10;
-#define IMU_CSV_NAME "IMU.csv"
-#define IMU_HEADER_CSV "DateTime,Scaled_Acc_X_(mg),Scaled_Acc_Y_(mg),Scaled_Acc_Z_(mg),Gyr_X_(DPS),Gyr_Y_(DPS),Gyr_Z_(DPS),Mag_X_(uT),Mag_Y_(uT),Mag_Z_(uT),Tmp_(C)\n"
-#define RTD_CSV_NAME "RTD.csv"
-#define RTD_HEADER_CSV "RTD1_(C),RTD2_(C),RTD3_(C)\n"
+#define IMU_CSV_NAME    "IMU.csv"
+#define IMU_HEADER_CSV  "DateTime,Scaled_Acc_X_(mg),Scaled_Acc_Y_(mg),Scaled_Acc_Z_(mg),Gyr_X_(DPS),Gyr_Y_(DPS),Gyr_Z_(DPS),Mag_X_(uT),Mag_Y_(uT),Mag_Z_(uT),Tmp_(C)\n"
+#define RTD_CSV_NAME    "RTD.csv"
+#define RTD_HEADER_CSV  "DateTime,RTD1_(C),RTD2_(C),RTD3_(C)\n"
 
 //#define USE_SPI       // Uncomment this to use SPI
 
@@ -114,8 +114,8 @@ void Init_Sd_Card(bool flag, bool imu_flag)
       while (true);
     }
     // write header of csv
-    LogToCSV(IMU_HEADER_CSV);
-    Write_Header();
+    LogToCSV(IMU_HEADER_CSV, IMU_CSV_NAME);
+    LogToCSV(RTD_HEADER_CSV, RTD_CSV_NAME);
 
     /*
     if(imu_flag) 
@@ -175,15 +175,15 @@ void LogSensorData()
   t1 = GetTemp(&thermo1, 1);
   t2 = GetTemp(&thermo2, 2);
   t3 = GetTemp(&thermo3, 3);
-  LogTemp(t1, t2, t3);
+  LogTemp(t1, t2, t3, RTD_CSV_NAME);
+ 
   
   if( myICM.dataReady() )
   {
     myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
     //printRawAGMT( myICM.agmt );     // Uncomment this to see the raw values, taken directly from the agmt structure
     //printScaledAGMT( myICM.agmt);   // This function takes into account the scale settings from when the measurement was made to calculate the values with units
-    LogTime();
-    LogScaledAGMT(myICM.agmt);
+    LogScaledAGMT(myICM.agmt, IMU_CSV_NAME);
     delay(30);
   }
   else
@@ -194,10 +194,10 @@ void LogSensorData()
 }
 
 
-void LogToCSV(String dataString)
+void LogToCSV(String dataString, const char* csv_name)
 {
  // log data 
- File dataFile = SD.open(IMU_CSV_NAME, FILE_WRITE);
+ File dataFile = SD.open(csv_name, FILE_WRITE);
 
   // if the file is available, write to it:
   if (dataFile) {
@@ -213,12 +213,12 @@ void LogToCSV(String dataString)
 }
 
 
-void LogFormattedFloat(float val, uint8_t leading, uint8_t decimals){
+void LogFormattedFloat(float val, uint8_t leading, uint8_t decimals, const char* csv_name){
   float aval = abs(val);
   if(val < 0){
-    LogToCSV("-");
+    LogToCSV("-", csv_name);
   }else{
-    LogToCSV(" ");
+    LogToCSV(" ", csv_name);
   }
   for( uint8_t indi = 0; indi < leading; indi++ ){
     uint32_t tenpow = 0;
@@ -229,67 +229,69 @@ void LogFormattedFloat(float val, uint8_t leading, uint8_t decimals){
       tenpow *= 10;
     }
     if( aval < tenpow){
-      LogToCSV("0");
+      LogToCSV("0", csv_name);
     }else{
       break;
     }
   }
   if(val < 0){
     //SERIAL_PORT.print(-val, decimals);
-    LogToCSV(String(-val, decimals));
+    LogToCSV(String(-val, decimals), csv_name);
   }else{
     //SERIAL_PORT.print(val, decimals);
-    LogToCSV(String(val, decimals));
+    LogToCSV(String(val, decimals), csv_name);
   }
 }
 
-void LogTime()
+void LogTime(const char* csv_name)
 {
-  // log date time 
-  LogToCSV(year()); 
-  LogToCSV("-");
-  LogToCSV(month());
-  LogToCSV("-");
-  LogToCSV(day());
-  LogToCSV(" ");
-  LogToCSV(hour());
-  LogToCSV(":");
-  LogToCSV(minute());
-  LogToCSV(":");
-  LogToCSV(second());
-  LogToCSV(".");
-  LogToCSV(millis()%1000);
-  LogToCSV(",");
+  // yyyy-mm-dd hh:mm:ss
+  LogToCSV(year(), csv_name); 
+  LogToCSV("-", csv_name);
+  LogToCSV(month(), csv_name);
+  LogToCSV("-", csv_name);
+  LogToCSV(day(), csv_name);
+  LogToCSV(" ", csv_name);
+  LogToCSV(hour(), csv_name);
+  LogToCSV(":", csv_name);
+  LogToCSV(minute(), csv_name);
+  LogToCSV(":", csv_name);
+  LogToCSV(second(), csv_name);
+  LogToCSV(".", csv_name);
+  LogToCSV(millis()%1000, csv_name);
+  LogToCSV(",", csv_name);
 }
 
 
 // "Tmp_(C),Scaled_Acc_X_(mg),Scaled_Acc_Y_(mg),Scaled_Acc_Z_(mg),Gyr_X_(DPS),Gyr_Y_(DPS),Gyr_Z_(DPS),Mag_X_(uT),Mag_Y_(uT),Mag_Z_(uT)"
-void LogScaledAGMT(ICM_20948_AGMT_t agmt)
+void LogScaledAGMT(ICM_20948_AGMT_t agmt, const char* csv_name)
 {
+  // yyyy-mm-dd hh:mm:ss
+  LogTime(csv_name);
   // Scaled Acc (mg)
-  LogFormattedFloat( myICM.accX(), 5, 2 );
-  LogToCSV(",");
-  LogFormattedFloat( myICM.accY(), 5, 2 );
-  LogToCSV(",");
-  LogFormattedFloat( myICM.accZ(), 5, 2 );
+  LogFormattedFloat( myICM.accX(), 5, 2, csv_name);
+  LogToCSV(",", csv_name);
+  LogFormattedFloat( myICM.accY(), 5, 2, csv_name);
+  LogToCSV(",", csv_name);
+  LogFormattedFloat( myICM.accZ(), 5, 2, csv_name);
   // gyr(DPS)
-  LogToCSV(", ");
-  LogFormattedFloat( myICM.gyrX(), 5, 2 );
-  LogToCSV(",");
-  LogFormattedFloat( myICM.gyrY(), 5, 2 );
-  LogToCSV(",");
-  LogFormattedFloat( myICM.gyrZ(), 5, 2 );
+  LogToCSV(", ", csv_name);
+  LogFormattedFloat( myICM.gyrX(), 5, 2, csv_name);
+  LogToCSV(",", csv_name);
+  LogFormattedFloat( myICM.gyrY(), 5, 2, csv_name);
+  LogToCSV(",", csv_name);
+  LogFormattedFloat( myICM.gyrZ(), 5, 2, csv_name);
   // mag (uT)
-  LogToCSV(",");
-  LogFormattedFloat( myICM.magX(), 5, 2 );
-  LogToCSV(",");
-  LogFormattedFloat( myICM.magY(), 5, 2 );
-  LogToCSV(",");
-  LogFormattedFloat( myICM.magZ(), 5, 2 );
+  LogToCSV(",", csv_name);
+  LogFormattedFloat( myICM.magX(), 5, 2, csv_name);
+  LogToCSV(",", csv_name);
+  LogFormattedFloat( myICM.magY(), 5, 2, csv_name);
+  LogToCSV(",", csv_name);
+  LogFormattedFloat( myICM.magZ(), 5, 2, csv_name);
   // tmp (C)
-  LogToCSV(",");
-  LogFormattedFloat( myICM.temp(), 5, 2 );
-  LogToCSV("\n");
+  LogToCSV(",", csv_name);
+  LogFormattedFloat( myICM.temp(), 5, 2, csv_name);
+  LogToCSV("\n", csv_name);
   Serial.println("Logging IMU");
 }
 
@@ -379,8 +381,9 @@ float GetTemp(Adafruit_MAX31865 *thermo, int num)
   Serial.print("Resistance = "); Serial.println(RREF*ratio,8);
   Serial.print("Temperature = "); Serial.println(thermo->temperature(RNOMINAL, RREF));
   Serial.print("RTD: "); Serial.println(num); 
-
+  
   // Check and print any faults
+  /*
   uint8_t fault = thermo->readFault();
   if (fault) {
     Serial.print("Fault 0x"); Serial.println(fault, HEX);
@@ -405,47 +408,24 @@ float GetTemp(Adafruit_MAX31865 *thermo, int num)
     thermo->clearFault();
   }
   Serial.println();
+  */
   return temperature;
   //delay(1000);
 }
 
 
-// write header to csv file 
-void Write_Header()
-{
-  File dataFile = SD.open(RTD_CSV_NAME, FILE_WRITE);
-  dataFile.println(RTD_HEADER_CSV);
-  dataFile.close();
-}
-
 // write temperature data to csv file
-void LogTemp(float t1, float t2, float t3)
+void LogTemp(float t1, float t2, float t3, const char *csv_name)
 {
-  File dataFile = SD.open(RTD_CSV_NAME, FILE_WRITE);
-  // log date time 
-  dataFile.print(year()); 
-  dataFile.print("-");
-  dataFile.print(month());
-  dataFile.print("-");
-  dataFile.print(day());
-  dataFile.print(" ");
-  dataFile.print(hour());
-  dataFile.print(":");
-  dataFile.print(minute());
-  dataFile.print(":");
-  dataFile.print(second());
-  dataFile.print(".");
-  dataFile.print(millis()%1000);
-  dataFile.print(",");
+  // yyyy-mm-dd hh:mm:ss
+  LogTime(csv_name);
 
-  // log rtd
-  dataFile.print(t1);
-  dataFile.print(",");
-  dataFile.print(t2);
-  dataFile.print(",");
-  dataFile.print(t3);
-  dataFile.println();
+  // log rtd LogToCSV(",", csv_name);
+  LogToCSV(t1, csv_name);
+  LogToCSV(",", csv_name);
+  LogToCSV(t2, csv_name);
+  LogToCSV(",", csv_name);
+  LogToCSV(t3, csv_name);
+  LogToCSV("\n", csv_name);
   Serial.println("Logging RTD");
-  
-  dataFile.close();
 }
