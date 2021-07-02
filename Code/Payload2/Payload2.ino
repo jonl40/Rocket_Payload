@@ -275,7 +275,8 @@ void LogSensorData()
 {
   float t1, t2, t3;
   String date; 
-  
+
+  /*
   t1 = GetTemp(&thermo1, 1);
   t2 = GetTemp(&thermo2, 2);
   t3 = GetTemp(&thermo3, 3);
@@ -285,8 +286,8 @@ void LogSensorData()
 
   // move to logging thread 
   LogRTD(RTD_CSV_NAME);
- 
-  
+  */
+
   if( myICM.dataReady() )
   {
     myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
@@ -305,7 +306,7 @@ void LogSensorData()
     Serial.println("Waiting for data");
     delay(500);
   }
-  
+
 }
 
 
@@ -314,14 +315,15 @@ float GetTemp(Adafruit_MAX31865 *thermo, int num)
   uint16_t rtd = thermo->readRTD();
   float temperature = thermo->temperature(RNOMINAL, RREF);
 
-  Serial.print("RTD value: "); Serial.println(rtd);
+  // Serial.print("RTD value: "); Serial.println(rtd);
   float ratio = rtd;
   ratio /= 32768;
+  /*
   Serial.print("Ratio = "); Serial.println(ratio,8);
   Serial.print("Resistance = "); Serial.println(RREF*ratio,8);
   Serial.print("Temperature = "); Serial.println(thermo->temperature(RNOMINAL, RREF));
   Serial.print("RTD: "); Serial.println(num); 
-  
+  */
   // Check and print any faults
   /*
   uint8_t fault = thermo->readFault();
@@ -407,7 +409,17 @@ void LogFormattedFloat(float val, uint8_t leading, uint8_t decimals, const char*
 String TimeStr()
 {
   // yyyy-mm-dd hh:mm:ss
-  String datetime = String(year()) + "-" + String(month()) + "-" + String(day()) + " " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + "." + String(millis()%1000);
+  int num = millis()%1000;
+  String mill;
+  
+  if(num < 10)
+    mill = "0" + String(num);
+  if(num < 100)
+    mill = "0" + String(num);
+  else
+    mill = String(num);
+  
+  String datetime = String(year()) + "-" + String(month()) + "-" + String(day()) + " " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + "." + mill;
   // Serial.println(datetime);
   return datetime;
 }
