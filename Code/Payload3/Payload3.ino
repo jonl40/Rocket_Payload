@@ -10,7 +10,7 @@
  * 
  * Distributed as-is; no warranty is given.
  ***************************************************************/
-// #include "TeensyThreads.h"
+#include "TeensyThreads.h"
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 #include <Adafruit_MAX31865.h>
 #include <SD.h>
@@ -51,8 +51,12 @@
 #define CS_PIN2 37
 #define CS_PIN3 36
 
-#define MAX_RTD 50
-#define MAX_IMU 50
+Adafruit_MAX31865 thermo1 = Adafruit_MAX31865(CS_PIN1);
+Adafruit_MAX31865 thermo2 = Adafruit_MAX31865(CS_PIN2);
+Adafruit_MAX31865 thermo3 = Adafruit_MAX31865(CS_PIN3);
+
+#define MAX_RTD 20
+#define MAX_IMU 20
 int FRONT_RTD = 0;
 int REAR_RTD = -1;
 int FRONT_IMU = 0;
@@ -155,10 +159,19 @@ struct imu dequeue_imu()
     return sensor;
 }
 
-Adafruit_MAX31865 thermo1 = Adafruit_MAX31865(CS_PIN1);
-Adafruit_MAX31865 thermo2 = Adafruit_MAX31865(CS_PIN2);
-Adafruit_MAX31865 thermo3 = Adafruit_MAX31865(CS_PIN3);
+bool Init_RTD(bool flag)
+{
+  if(flag)
+  {
+    Serial.println("Adafruit MAX31865 PT100 Sensor Test!");
+    thermo1.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
+    thermo2.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
+    thermo3.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
+    return true;
+  }
 
+  return false;
+}
 
 bool Init_Imu(bool flag)
 {
@@ -200,7 +213,7 @@ bool Init_Imu(bool flag)
 }
 
 
-void Init_Sd_Card(bool flag, bool imu_flag)
+void Init_Sd_Card(bool flag, bool imu_flag, bool rtd_flag)
 {
   // wait for Serial Monitor to connect. Needed for native USB port boards only:
   if (flag)
@@ -220,15 +233,10 @@ void Init_Sd_Card(bool flag, bool imu_flag)
     LogToCSV(IMU_HEADER_CSV, IMU_CSV_NAME);
     LogToCSV(RTD_HEADER_CSV, RTD_CSV_NAME);
 
-    /*
-    if(imu_flag) 
-    {
-      threads.addThread(ImuThreadLogger); 
-    }
-    */
+    if(imu_flag && rtd_flag) 
+      threads.addThread(ThreadLogger); 
 
   Serial.println("initialization done."); 
-  
   }
 }
 
@@ -236,30 +244,31 @@ void Init_Sd_Card(bool flag, bool imu_flag)
 void setup() {
   SERIAL_PORT.begin(115200);
 
-  Serial.println("Adafruit MAX31865 PT100 Sensor Test!");
-  thermo1.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
-  thermo2.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
-  thermo3.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
-  
+  bool rtd_is_initialized = Init_RTD(true);
   bool imu_is_initialized = Init_Imu(true);
-  Init_Sd_Card(true, imu_is_initialized); 
+  Init_Sd_Card(true, imu_is_initialized, rtd_is_initialized); 
 }
 
 void loop() {
   LogSensorData();
 }
 
-/*
-void ImuThreadLogger() 
+
+void ThreadLogger() 
 {
+  Threads::Mutex mylock;
+  Threads::Scope m(mylock); // lock on creation
   while(1)
   {
+    LogRTD(RTD_CSV_NAME);
     if( myICM.dataReady() )
     {
       myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
       //printScaledAGMT( myICM.agmt);   // This function takes into account the sclae settings from when the measurement was made to calculate the values with units
-      LogCsvScaledAGMT(myICM.agmt);
-      threads.delay(30);
+      //LogCsvScaledAGMT(myICM.agmt);
+      LogIMU(IMU_CSV_NAME);
+      //threads.delay(30);
+      threads.delay(300);
   }
     else
     {
@@ -268,15 +277,13 @@ void ImuThreadLogger()
     }
     threads.yield();
   }
-}
-*/
+} // unlock at destruction
 
 void LogSensorData()
 {
   float t1, t2, t3;
   String date; 
 
-  /*
   t1 = GetTemp(&thermo1, 1);
   t2 = GetTemp(&thermo2, 2);
   t3 = GetTemp(&thermo3, 3);
@@ -285,8 +292,8 @@ void LogSensorData()
   enqueue_rtd(temps);
 
   // move to logging thread 
-  LogRTD(RTD_CSV_NAME);
-  */
+  // LogRTD(RTD_CSV_NAME);
+
 
   if( myICM.dataReady() )
   {
@@ -297,7 +304,7 @@ void LogSensorData()
     GetAGMTstruct(myICM.agmt);
 
     // move to logging thread 
-    LogIMU(IMU_CSV_NAME);
+    // LogIMU(IMU_CSV_NAME);
     
     delay(30);
   }
@@ -318,12 +325,14 @@ float GetTemp(Adafruit_MAX31865 *thermo, int num)
   // Serial.print("RTD value: "); Serial.println(rtd);
   float ratio = rtd;
   ratio /= 32768;
+  
   /*
   Serial.print("Ratio = "); Serial.println(ratio,8);
   Serial.print("Resistance = "); Serial.println(RREF*ratio,8);
   Serial.print("Temperature = "); Serial.println(thermo->temperature(RNOMINAL, RREF));
   Serial.print("RTD: "); Serial.println(num); 
   */
+
   // Check and print any faults
   /*
   uint8_t fault = thermo->readFault();
