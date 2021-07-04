@@ -15,6 +15,11 @@ DATA_PNG = "RTD.png"
 
 df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
 df.head()
+# remove rows with header, drop blanks, convert data to float
+df = df[df['RTD1_(C)'] != 'RTD1_(C)']
+df = df.dropna()
+df = df.astype(float)
+
 ax = df.plot(title="RTD temperature (°C)", grid=True, marker='.', markersize=10)
 ax.set_xlabel("DateTime")
 ax.set_ylabel("Temperature (°C)")
