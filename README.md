@@ -2,12 +2,16 @@
 Code for teensy 4.1 microcontroller to interface with sensors 
 
 # RTD Plot 
-![RTD](https://user-images.githubusercontent.com/33404359/129466358-45bb753c-7414-4562-a588-a6ec022f70f5.jpg)
+![RTD](https://user-images.githubusercontent.com/33404359/129466876-585bf53b-315d-4299-883d-0c9c754bc83a.JPG)
+
 
 # IMU Plot
-![IMU](https://user-images.githubusercontent.com/33404359/129466354-d4221d40-ef20-43f5-9a2f-0096bcf3d6bb.jpg)
+![IMU](https://user-images.githubusercontent.com/33404359/129466873-76d0ccde-f9f1-41fe-a8f1-23c8ed6beb0d.jpg)
+
 
 # Schematic 
-![Schematic_Payload_2021-08-14](https://user-images.githubusercontent.com/33404359/129466555-efbbca67-3924-43f8-a373-ae20a5fb7664.png)
+![Schematic_Payload_2021-08-14](https://user-images.githubusercontent.com/33404359/129466893-313b346b-e958-4478-bb6f-6e1c83d26b1c.png)
+
+
 
 
