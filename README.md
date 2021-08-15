@@ -13,7 +13,7 @@ Code for teensy 4.1 microcontroller to interface with sensors
 # Gyro Plot 
 ![GYR](https://user-images.githubusercontent.com/33404359/129467062-f5bd9b1b-12a0-4f54-b63e-1ebc8cd224ec.jpg)
 
-# Mag
+# Mag Plot
 ![MAG](https://user-images.githubusercontent.com/33404359/129467082-6518a433-2a82-4ee8-b767-40426fbdc436.jpg)
 
 
