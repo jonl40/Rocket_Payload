@@ -18,6 +18,7 @@ df = pd.read_csv(SENSOR_DATA, index_col=0, parse_dates=True)
 print(df.head())
 # remove rows with header, drop blanks, convert data to float
 df = df[df['Scaled_Acc_X_(mg)'] != 'Scaled_Acc_X_(mg)']
+df = df.head(100)
 df = df.dropna()
 df = df.astype(float)
 
@@ -25,8 +26,8 @@ ax = df.plot(title="IMU Data", grid=True, marker='.', markersize=10)
 ax.set_xlabel("DateTime")
 fig = ax.get_figure()
 fig.set_size_inches(12, 9)
-fig.savefig(DATA_SVG, dpi = 100)
-# fig.savefig(DATA_PNG, dpi = 100)
+#fig.savefig(DATA_SVG, dpi = 100)
+fig.savefig(DATA_PNG, dpi = 100)
 
 # %%
 import os  
