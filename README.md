@@ -1,5 +1,5 @@
 # Rocket_Payload
-Code for teensy 4.1 microcontroller poll and log sensor (IMU, 3 RTDs) data using multithreading   
+Code for teensy 4.1 microcontroller to poll and log sensor data (IMU, 3 RTDs) using multithreading   
 
 # RTD Plot 
 ![RTD](https://user-images.githubusercontent.com/33404359/129466876-585bf53b-315d-4299-883d-0c9c754bc83a.JPG)
@@ -21,7 +21,7 @@ Code for teensy 4.1 microcontroller poll and log sensor (IMU, 3 RTDs) data using
 
 # Libraries Used 
 
-Multithreading library by Fernando Trias https://github.com/ftrias/TeensyThreads
-ICM 20948 Arduino Library by Owen Lyke @ SparkFun Electronics
-Adafruit PT100/P1000 RTD Sensor w/MAX31865 library by Limor Fried/Ladyada @ Adafruit Industries
+Multithreading library by Fernando Trias https://github.com/ftrias/TeensyThreads  
+ICM 20948 Arduino Library by Owen Lyke @ SparkFun Electronics  
+Adafruit PT100/P1000 RTD Sensor w/MAX31865 library by Limor Fried/Ladyada @ Adafruit Industries  
 
