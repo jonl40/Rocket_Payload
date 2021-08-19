@@ -36,7 +36,7 @@ Adafruit_MAX31865 thermo3 = Adafruit_MAX31865(CS_PIN3);
 
 
 // Period for polling sensor data 
-#define RTD_SAMPLE_PERIOD 1000
+#define RTD_SAMPLE_PERIOD 2000
 #define IMU_SAMPLE_PERIOD 30
 // wrap around after 50 days
 uint32_t RTD_TIME = 0; 
@@ -308,7 +308,7 @@ void loop()
   // log every "RTD_SAMPLE_PERIOD" ms
   if (millis() >= RTD_TIME + RTD_SAMPLE_PERIOD)
   {
-    Serial.println("      RTDLogger");
+    Serial.println("  RTDLogger");
     LogRTD(RTD_CSV_NAME);
     RTD_TIME += RTD_SAMPLE_PERIOD;
   }
@@ -556,7 +556,7 @@ void LogIMU(const char *csv_name)
         dataFile.print("\n");
         dataFile.close();
     
-        Serial.println("  Logging IMU");
+        Serial.println("      Logging IMU!!!");
       }
       // if the file isn't open, pop up an error:
       else 
