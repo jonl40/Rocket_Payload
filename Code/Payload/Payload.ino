@@ -191,10 +191,10 @@ bool Init_RTD(bool flag)
 {
   if(flag)
   {
-    Serial.println("Adafruit MAX31865 PT100 Sensor Test!");
     thermo1.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
     thermo2.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
     thermo3.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
+    Serial.println("Adafruit MAX31865 PT100 Sensors initialized");
     return true;
   }
 
@@ -221,15 +221,16 @@ bool Init_Imu(bool flag)
     {
       myICM.begin( Wire, AD0_VAL );
   
-      Serial.print( F("Initialization of the sensor returned: ") );
+      //Serial.print( F("Initialization of the sensor returned: ") );
       Serial.println( myICM.statusString() );
       if( myICM.status != ICM_20948_Stat_Ok )
       {
-        Serial.println( "Trying again..." );
+        Serial.println("Waiting for IMU to initialize..."); 
         delay(500);
       }
       else
       {
+        Serial.println("IMU initialized");
         initialized = true;
       }
     }
@@ -246,24 +247,28 @@ void Init_Sd_Card(bool flag)
   // wait for Serial Monitor to connect. Needed for native USB port boards only:
   if (flag)
   {
+    // wait for serial to get ready 
     while (!Serial)
     {
       Serial.println("Waiting for SD card to initialize..."); 
+      delay(1000);
     }
-  
-    if (!SD.begin(BUILTIN_SDCARD)) 
+
+    // wait for SD card to get ready 
+    while (!SD.begin(BUILTIN_SDCARD))
     {
-      Serial.println("initialization failed. Things to check:");
-      Serial.println("1. is a card inserted?");
+      Serial.println("SD card initialization failed. Check:");
+      Serial.println("1. is SD card inserted?");
       Serial.println("2. is your wiring correct?");
       Serial.println("Note: press reset or reopen this serial monitor after fixing your issue!");
-      while (true);
+      Serial.println("");
+      delay(1000);
     }
   
     // write header of csv
     LogToCSV(IMU_HEADER_CSV, IMU_CSV_NAME);
     LogToCSV(RTD_HEADER_CSV, RTD_CSV_NAME);
-    Serial.println("initialization done."); 
+    Serial.println("SD Card initialization done"); 
   }
 }
 
