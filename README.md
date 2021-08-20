@@ -1,5 +1,5 @@
 # Rocket_Payload
-Code for teensy 4.1 microcontroller to poll and log sensor data (IMU, 3 RTDs) using multithreading   
+C/C++ code for teensy 4.1 microcontroller to poll and log sensor data (IMU, 3 RTDs) using multithreading 
 
 # RTD Plot 
 ![RTD](https://user-images.githubusercontent.com/33404359/129466876-585bf53b-315d-4299-883d-0c9c754bc83a.JPG)
