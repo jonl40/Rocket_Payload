@@ -206,11 +206,11 @@ bool Init_Imu(bool flag)
 {
   if (flag)
   {
-    Serial.begin(115200);
     // wait for Serial 
     while(!Serial)
     {
       Serial.println("Waiting for Serial to initialize..."); 
+      delay(1000);
     }
     
     Wire.begin();
@@ -336,7 +336,6 @@ void PollIMU()
     {
       Serial.println("Waiting for data");
       threads.delay(500);
-      //delay(500);
     }
     threads.yield();
   }
