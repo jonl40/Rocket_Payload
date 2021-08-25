@@ -4,6 +4,7 @@
  *    Adafruit PT100/P1000 RTD Sensor w/MAX31865 library by Limor Fried/Ladyada @ Adafruit Industries
  * 
  ***************************************************************/
+#include "Queue.h"
 #include "TeensyThreads.h"
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 #include <Adafruit_MAX31865.h>
@@ -42,149 +43,9 @@ Adafruit_MAX31865 thermo3 = Adafruit_MAX31865(CS_PIN3);
 uint32_t RTD_TIME = 0; 
 uint32_t IMU_TIME = 0; 
 
-
-// Queue Size, vars for RTD and IMU data 
-#define MAX_RTD 30
-#define MAX_IMU 30
-
-volatile int FRONT_RTD = 0;
-volatile int REAR_RTD = -1;
-volatile int FRONT_IMU = 0;
-volatile int REAR_IMU = -1;
-
-// mutex for RTD and IMU Queues
-std::mutex m_rtd;
-std::mutex m_imu;
-
-struct rtd
-{
-  String date;   
-  float t1; 
-  float t2;
-  float t3;
-  bool error;
-};
-
-// RTD Queue
-struct rtd QUEUE_RTD[MAX_RTD];
-
-
-// FIFO First In First Out 
-void enqueue_rtd(struct rtd temps)
-{
-  std::lock_guard<std::mutex> lock(m_rtd); // lock on creation
-  if(REAR_RTD == MAX_RTD-1)
-  {
-      //Serial.println("RTD QUEUE IS FULL!");
-      // wrap around overwrite front of queue
-      FRONT_RTD = 0; 
-      REAR_RTD = -1;
-  }
-
-  // increment rear then assign value to index
-  QUEUE_RTD[++REAR_RTD] = temps; 
-} // unlock at destruction
-
-
-struct rtd dequeue_rtd()
-{ 
-  std::lock_guard<std::mutex> lock(m_rtd); // lock on creation
-  struct rtd temps = {-1,-1,-1,-1,true};
-
-  if(REAR_RTD == -1 || FRONT_RTD > REAR_RTD)
-  {
-      //Serial.println("RTD QUEUE IS EMPTY!");
-      return temps;
-  }
-
-  temps = QUEUE_RTD[FRONT_RTD];
-  FRONT_RTD++;
-  return temps;
-} // unlock at destruction
-
-
-bool is_rtd_queue_empty()
-{
-  std::lock_guard<std::mutex> lock(m_rtd); // lock on creation
-  if(REAR_RTD == -1 || FRONT_RTD > REAR_RTD)
-    return true;
-  else
-    return false; 
-} // unlock at destruction
-
-
-struct imu
-{
-  String date;   
- 
-  // Scaled_Acc
-  float acc_x; 
-  float acc_y;
-  float acc_z;
-  // Gyr
-  float gyr_x;
-  float gyr_y;
-  float gyr_z;
-  // Mag
-  float mag_x;
-  float mag_y;
-  float mag_z;
-  //temp
-  float tmp; 
-  
-  bool error;
-};
-
-// IMU Queue
-struct imu QUEUE_IMU[MAX_IMU];
-
-
-// FIFO First In First Out 
-void enqueue_imu(struct imu sensor)
-{
-  std::lock_guard<std::mutex> lock(m_imu); // lock on creation
-  if(REAR_IMU == MAX_IMU-1)
-  {
-      Serial.println("IMU QUEUE IS FULL!");
-      // wrap around overwrite front of queue
-      FRONT_IMU = 0; 
-      REAR_IMU = -1;
-  }
-
-  // increment rear then assign value to index
-  QUEUE_IMU[++REAR_IMU] = sensor; 
-} // unlock at destruction
-
-
-struct imu dequeue_imu()
-{
-  std::lock_guard<std::mutex> lock(m_imu); // lock on creation
-  struct imu sensor = {-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,true};
-  if(REAR_IMU == -1 || FRONT_IMU > REAR_IMU)
-  {   
-      m_imu.unlock();
-      Serial.println("IMU QUEUE IS EMPTY!");
-      return sensor;
-  }
-  
-  sensor = QUEUE_IMU[FRONT_IMU];
-  FRONT_IMU++;
-  return sensor;
-} // unlock at destruction
-
-
-bool is_imu_queue_empty()
-{
-  std::lock_guard<std::mutex> lock(m_imu); // lock on creation
-  if(REAR_IMU == -1 || FRONT_IMU > REAR_IMU)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-} // unlock at destruction
+// queue
+Queue_rtd rtd_queue; 
+Queue_imu imu_queue; 
 
 
 bool Init_RTD(bool flag)
@@ -356,7 +217,8 @@ void PollRTD()
     t3 = GetTemp(&thermo3);
     date = TimeStr();
     struct rtd temps = {date,t1,t2,t3,false};
-    enqueue_rtd(temps);
+    rtd_queue.enqueue(temps);
+    //enqueue_rtd(temps);
     threads.delay(RTD_SAMPLE_PERIOD);
     threads.yield();
   }
@@ -484,13 +346,15 @@ void GetAGMTstruct(ICM_20948_AGMT_t agmt)
 {
   String date = TimeStr();
   struct imu sensor = {date,myICM.accX(),myICM.accY(),myICM.accZ(),myICM.gyrX(),myICM.gyrY(),myICM.gyrZ(),myICM.magX(),myICM.magY(),myICM.magZ(),myICM.temp()};
-  enqueue_imu(sensor);
+  imu_queue.enqueue(sensor);
+  //enqueue_imu(sensor);
 } 
 
 
 void LogRTD(const char *csv_name)
 {
-    struct rtd temps = dequeue_rtd();
+    //struct rtd temps = dequeue_rtd();
+    struct rtd temps = rtd_queue.dequeue();
     if(temps.error == false)
     {
       // log data 
@@ -520,10 +384,12 @@ void LogRTD(const char *csv_name)
 
 void LogIMU(const char *csv_name)
 {
-  while(!is_imu_queue_empty())
+  //while(!is_imu_queue_empty())
+  while(!imu_queue.is_empty())
   {
     //Serial.println("LogIMU while loop");
-    struct imu sensor = dequeue_imu();
+    //struct imu sensor = dequeue_imu();
+    struct imu sensor = imu_queue.dequeue();
     if(sensor.error == false)
     {
       // log data 
