@@ -50,16 +50,10 @@ class Queue {
     std::mutex m;
     int front = 0;
     int rear = -1;
-    // default size 
-    //uint8_t size = 30;
 
   public:
-    //virtual Queue();
-    bool is_empty();
-    //virtual void enqueue() = 0;
-    
-    
-    
+    bool empty();
+   
 }; 
 
 // Derived class

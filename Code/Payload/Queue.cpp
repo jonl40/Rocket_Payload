@@ -1,7 +1,7 @@
 #include "Queue.h"
 
 
-bool Queue::is_empty()
+bool Queue::empty()
 {
   std::lock_guard<std::mutex> lock(m); // lock on creation
   if(rear == -1 || front > rear)
