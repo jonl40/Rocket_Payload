@@ -14,6 +14,10 @@
 #include <SD.h>
 #include <TimeLib.h>
 
+#define SERIAL_MONITOR false 
+#define SD_INSERTED true  
+#define START_RTD true
+#define START_IMU true 
 
 // SparkFun 9DoF ICM_20948 IMU     
 ICM_20948_I2C myICM;    // create an ICM_20948_I2C object
@@ -142,11 +146,11 @@ void setup()
 {
   Serial.begin(115200);
 
-  bool rtd_is_initialized = Init_RTD(true);
-  bool imu_is_initialized = Init_Imu(true);
+  bool rtd_is_initialized = Init_RTD(START_RTD);
+  bool imu_is_initialized = Init_Imu(START_IMU);
   // wait for 1.5 sec
   delay(1500);
-  Init_Sd_Card(true); 
+  Init_Sd_Card(SD_INSERTED); 
 
   // create thread to poll IMU
   if (imu_is_initialized)
@@ -168,17 +172,17 @@ void setup()
 void loop() 
 {
   // log every "IMU_SAMPLE_PERIOD" ms
-  if (millis() >= IMU_TIME + IMU_SAMPLE_PERIOD)
+  if (millis() >= IMU_TIME + IMU_SAMPLE_PERIOD && SD_INSERTED)
   {
-    Serial.println("  IMULogger");
+    // Serial.println("  IMULogger");
     LogIMU(IMU_CSV_NAME);
     IMU_TIME += IMU_SAMPLE_PERIOD;
   }
 
   // log every "RTD_SAMPLE_PERIOD" ms
-  if (millis() >= RTD_TIME + RTD_SAMPLE_PERIOD)
+  if (millis() >= RTD_TIME + RTD_SAMPLE_PERIOD && SD_INSERTED)
   {
-    Serial.println("  RTDLogger");
+    // Serial.println("  RTDLogger");
     LogRTD(RTD_CSV_NAME);
     RTD_TIME += RTD_SAMPLE_PERIOD;
   }
@@ -190,7 +194,7 @@ void PollIMU()
 
   while(true)
   {
-    Serial.println("PollIMU");
+    // Serial.println("PollIMU");
     if( myICM.dataReady() )
     {
       myICM.getAGMT();                
@@ -198,7 +202,18 @@ void PollIMU()
       // "DateTime,Scaled_Acc_X_(mg),Scaled_Acc_Y_(mg),Scaled_Acc_Z_(mg),Gyr_X_(DPS),Gyr_Y_(DPS),Gyr_Z_(DPS),Mag_X_(uT),Mag_Y_(uT),Mag_Z_(uT),Tmp_(C)\n"
       struct imu sensor = {date,myICM.accX(),myICM.accY(),myICM.accZ(),myICM.gyrX(),myICM.gyrY(),myICM.gyrZ(),myICM.magX(),myICM.magY(),myICM.magZ(),myICM.temp()};
       imu_queue.enqueue(sensor);
-      threads.delay(IMU_SAMPLE_PERIOD);
+      
+      // serial plotter 
+      if (SERIAL_MONITOR)
+      {
+        Serial.print(sensor.acc_x);
+        Serial.print("\t");
+        Serial.print(sensor.acc_y);
+        Serial.print("\t");
+        Serial.println(sensor.acc_z);
+      }
+      // threads.delay(IMU_SAMPLE_PERIOD);
+      
     }
     else
     {
@@ -218,7 +233,7 @@ void PollRTD()
   
   while(true)
   {
-    Serial.println("PollRTD");
+    // Serial.println("PollRTD");
     t1 = GetTemp(&thermo1);
     t2 = GetTemp(&thermo2);
     t3 = GetTemp(&thermo3);
@@ -235,8 +250,8 @@ void LogIMU(const char *csv_name)
 {
   while(!imu_queue.empty())
   {
-    //Serial.println("LogIMU while loop");
-    //struct imu sensor = dequeue_imu();
+    // Serial.println("LogIMU while loop");
+    // struct imu sensor = dequeue_imu();
     struct imu sensor = imu_queue.dequeue();
     if(sensor.error == false)
     {
@@ -274,7 +289,7 @@ void LogIMU(const char *csv_name)
         dataFile.print("\n");
         dataFile.close();
     
-        Serial.println("      Logging IMU!!!");
+        // Serial.println("      Logging IMU!!!");
       }
       // if the file isn't open, pop up an error:
       else 
@@ -305,7 +320,7 @@ void LogRTD(const char *csv_name)
         dataFile.print("\n");
         dataFile.close();
   
-        Serial.println("                  Logging RTD !!!");  
+        // Serial.println("                  Logging RTD !!!");  
       }
       // if the file isn't open, pop up an error:
       else 

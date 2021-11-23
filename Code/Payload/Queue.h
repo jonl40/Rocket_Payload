@@ -7,7 +7,7 @@
 
 // Queue Size, vars for RTD and IMU data 
 #define MAX_RTD 30
-#define MAX_IMU 30
+#define MAX_IMU 200
 
 
 struct rtd
@@ -67,7 +67,7 @@ class Queue_rtd: public Queue
     struct rtd dequeue();
     
   private:
-    struct rtd buff[MAX_IMU];
+    struct rtd buff[MAX_RTD];
     
 };
 
@@ -81,7 +81,7 @@ class Queue_imu: public Queue
     struct imu dequeue();
 
   private:
-    struct imu buff[MAX_RTD];
+    struct imu buff[MAX_IMU];
     
 };
 
