@@ -1,5 +1,11 @@
 #include "Queue.h"
 
+Queue::Queue()
+{
+  front = 0;
+  rear = -1;
+}
+
 
 bool Queue::empty()
 {

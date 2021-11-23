@@ -48,10 +48,11 @@ class Queue {
   
   protected:
     std::mutex m;
-    int front = 0;
-    int rear = -1;
+    int front;
+    int rear;
 
   public:
+    Queue();
     bool empty();
    
 }; 
