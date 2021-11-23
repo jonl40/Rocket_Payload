@@ -33,7 +33,7 @@ void Queue_rtd::enqueue(struct rtd temps)
   std::lock_guard<std::mutex> lock(m); // lock on creation
   if(rear == MAX_RTD-1)
   {
-      //Serial.println("RTD QUEUE IS FULL!");
+      // Serial.println("      RTD QUEUE IS FULL!");
       // wrap around overwrite front of queue
       front = 0; 
       rear = -1;
@@ -51,7 +51,7 @@ struct rtd Queue_rtd::dequeue()
 
   if(rear == -1 || front > rear)
   {
-      //Serial.println("RTD QUEUE IS EMPTY!");
+      // Serial.println("RTD QUEUE IS EMPTY!");
       return temps;
   }
 
@@ -72,7 +72,7 @@ void Queue_imu::enqueue(struct imu sensor)
   std::lock_guard<std::mutex> lock(m); // lock on creation
   if(rear == MAX_IMU-1)
   {
-      Serial.println("IMU QUEUE IS FULL!");
+      // Serial.println("IMU QUEUE IS FULL!");
       // wrap around overwrite front of queue
       front = 0; 
       rear = -1;
@@ -89,7 +89,7 @@ struct imu Queue_imu::dequeue()
   struct imu sensor = {-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,true};
   if(rear == -1 || front > rear)
   {   
-      Serial.println("IMU QUEUE IS EMPTY!");
+      // Serial.println("IMU QUEUE IS EMPTY!");
       return sensor;
   }
   
