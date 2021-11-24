@@ -1,6 +1,17 @@
 # Rocket_Payload
 C/C++ code for teensy 4.1 microcontroller to poll and log sensor data (IMU, 3 RTDs) using multithreading 
 
+## References / Filter Design  
+https://github.com/pms67/HadesFCS/blob/master/Filtering/C%20Code/FIR.h  
+https://www.youtube.com/watch?v=uNNNj9AZisM  
+https://www.youtube.com/watch?v=QRMe02kzVkA  
+http://t-filter.engineerjs.com/  
+
+## Libraries Used 
+Multithreading library by Fernando Trias https://github.com/ftrias/TeensyThreads  
+ICM 20948 Arduino Library by Owen Lyke @ SparkFun Electronics  
+Adafruit PT100/P1000 RTD Sensor w/MAX31865 library by Limor Fried/Ladyada @ Adafruit Industries  
+
 # RTD Plot 
 ![RTD](https://user-images.githubusercontent.com/33404359/129466876-585bf53b-315d-4299-883d-0c9c754bc83a.JPG)
 
@@ -19,9 +30,4 @@ C/C++ code for teensy 4.1 microcontroller to poll and log sensor data (IMU, 3 RT
 # Schematic 
 ![Schematic_Payload_2021-08-14](https://user-images.githubusercontent.com/33404359/129466893-313b346b-e958-4478-bb6f-6e1c83d26b1c.png)
 
-# Libraries Used 
-
-Multithreading library by Fernando Trias https://github.com/ftrias/TeensyThreads  
-ICM 20948 Arduino Library by Owen Lyke @ SparkFun Electronics  
-Adafruit PT100/P1000 RTD Sensor w/MAX31865 library by Limor Fried/Ladyada @ Adafruit Industries  
 
