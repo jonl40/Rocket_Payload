@@ -28,6 +28,10 @@ struct imu
   float acc_x; 
   float acc_y;
   float acc_z;
+  // Scaled_Acc IIR Filtered
+  float acc_iir_x; 
+  float acc_iir_y;
+  float acc_iir_z;
   // Gyr
   float gyr_x;
   float gyr_y;

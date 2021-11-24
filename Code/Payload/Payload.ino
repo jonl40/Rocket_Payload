@@ -7,6 +7,7 @@
 #include "Queue.h"
 #include "Imu.h"
 #include "Rtd.h"
+#include "Filter.h"
 
 #include "TeensyThreads.h"
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
@@ -14,10 +15,14 @@
 #include <SD.h>
 #include <TimeLib.h>
 
-#define SERIAL_MONITOR false 
-#define SD_INSERTED true  
+#define SERIAL_MONITOR false
+#define SD_INSERTED true 
 #define START_RTD true
 #define START_IMU true 
+
+#define IIR_ACC_X_ALPHA 0.1f
+#define IIR_ACC_Y_ALPHA 0.1f
+#define IIR_ACC_Z_ALPHA 0.1f
 
 // SparkFun 9DoF ICM_20948 IMU     
 ICM_20948_I2C myICM;    // create an ICM_20948_I2C object
@@ -37,6 +42,22 @@ uint32_t IMU_TIME = 0;
 // queue for polling and logging sensor data 
 Queue_rtd rtd_queue; 
 Queue_imu imu_queue; 
+// Queue_imu imu_queue_fir; 
+Queue_imu imu_queue_iir; 
+
+
+/*
+// FIR Filters 
+FIR_Filter fir_acc_x; 
+FIR_Filter fir_acc_y; 
+FIR_Filter fir_acc_z; 
+*/
+
+
+// IIR Filters 
+IIR_Filter iir_acc_x(IIR_ACC_X_ALPHA, 0); 
+IIR_Filter iir_acc_y(IIR_ACC_Y_ALPHA, 0); 
+IIR_Filter iir_acc_z(IIR_ACC_Z_ALPHA, 1000); 
 
 
 bool Init_RTD(bool flag)
@@ -200,21 +221,47 @@ void PollIMU()
       myICM.getAGMT();                
       String date = TimeStr();
       // "DateTime,Scaled_Acc_X_(mg),Scaled_Acc_Y_(mg),Scaled_Acc_Z_(mg),Gyr_X_(DPS),Gyr_Y_(DPS),Gyr_Z_(DPS),Mag_X_(uT),Mag_Y_(uT),Mag_Z_(uT),Tmp_(C)\n"
-      struct imu sensor = {date,myICM.accX(),myICM.accY(),myICM.accZ(),myICM.gyrX(),myICM.gyrY(),myICM.gyrZ(),myICM.magX(),myICM.magY(),myICM.magZ(),myICM.temp()};
+      float acc_x = myICM.accX();
+      float acc_y = myICM.accY();
+      float acc_z = myICM.accZ();
+      struct imu sensor = {date,
+                          acc_x,                    // Scaled_Acc
+                          acc_y,
+                          acc_z,
+                          iir_acc_x.update(acc_x),  // Scaled_Acc IIR Filtered
+                          iir_acc_y.update(acc_y),
+                          iir_acc_z.update(acc_z),
+                          myICM.gyrX(),         // Gyr
+                          myICM.gyrY(),
+                          myICM.gyrZ(),
+                          myICM.magX(),         // Mag
+                          myICM.magY(),
+                          myICM.magZ(),
+                          myICM.temp()};        // temp
       imu_queue.enqueue(sensor);
       
       // serial plotter 
       if (SERIAL_MONITOR)
       {
+        // raw data 
         Serial.print(sensor.acc_x);
         Serial.print("\t");
         Serial.print(sensor.acc_y);
         Serial.print("\t");
-        Serial.println(sensor.acc_z);
+        Serial.print(sensor.acc_z);
+
+        // filtered data 
+        Serial.print(sensor.acc_iir_x);
+        Serial.print("\t");
+        Serial.print(sensor.acc_iir_y);
+        Serial.print("\t");
+        Serial.println(sensor.acc_iir_z);
       }
+
       // threads.delay(IMU_SAMPLE_PERIOD);
       
     }
+    
     else
     {
       Serial.println("Waiting for data");
@@ -269,6 +316,13 @@ void LogIMU(const char *csv_name)
         dataFile.print(LogFormattedFloat( sensor.acc_y, 5, 2));
         dataFile.print(",");
         dataFile.print(LogFormattedFloat( sensor.acc_z, 5, 2));
+        dataFile.print(",");
+        // Scaled_Acc IIR Filtered
+        dataFile.print(LogFormattedFloat( sensor.acc_iir_x, 5, 2));
+        dataFile.print(",");
+        dataFile.print(LogFormattedFloat( sensor.acc_iir_y, 5, 2));
+        dataFile.print(",");
+        dataFile.print(LogFormattedFloat( sensor.acc_iir_z, 5, 2));
         dataFile.print(",");
         // gyr(DPS)
         dataFile.print(LogFormattedFloat( sensor.gyr_x, 5, 2));
