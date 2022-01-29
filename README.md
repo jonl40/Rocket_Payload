@@ -1,6 +1,6 @@
 # Rocket_Payload
-C/C++ code for teensy 4.1 microcontroller to poll and log sensor data (IMU, 3 RTDs) using multithreading 
-Python pandas, matplotlib for data visualization 
+C/C++ code for teensy 4.1 microcontroller to poll and log sensor data (IMU, 3 RTDs) using multithreading   
+Python pandas, matplotlib for data visualization  
 
 ## References / Filter Design  
 https://github.com/pms67/HadesFCS/blob/master/Filtering/C%20Code/FIR.h  
