@@ -54,7 +54,7 @@ FIR_Filter fir_acc_z;
 */
 
 
-// IIR Filters 
+// IIR Filters  
 IIR_Filter iir_acc_x(IIR_ACC_X_ALPHA, 0); 
 IIR_Filter iir_acc_y(IIR_ACC_Y_ALPHA, 0); 
 IIR_Filter iir_acc_z(IIR_ACC_Z_ALPHA, 1000); 
