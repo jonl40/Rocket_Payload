@@ -80,6 +80,7 @@ bool Init_Imu(bool flag)
   if (flag)
   {
     // wait for Serial 
+    // remove !Serial code does not run when powered on unless connected to usb 
     while(!Serial)
     {
       Serial.println("Waiting for Serial to initialize..."); 
