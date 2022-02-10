@@ -10,8 +10,18 @@ http://t-filter.engineerjs.com/
 
 ## Libraries Used 
 Multithreading library by Fernando Trias https://github.com/ftrias/TeensyThreads  
-ICM 20948 Arduino Library by Owen Lyke @ SparkFun Electronics  
+ICM 20948 Arduino Library by Owen Lyke @ SparkFun Electronics  https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary  
 Adafruit PT100/P1000 RTD Sensor w/MAX31865 library by Limor Fried/Ladyada @ Adafruit Industries  
+
+## Set up
+https://www.arduino.cc/en/software  
+https://www.pjrc.com/teensy/td_download.html  
+In arduino ide under tools select manage libraries search and install Adafruit_MAX31865  
+Install ICM-20948 https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary  
+Install Multithreading library https://github.com/ftrias/TeensyThreads  
+
+
+
 
 # RTD Plot 
 ![RTD](https://user-images.githubusercontent.com/33404359/129466876-585bf53b-315d-4299-883d-0c9c754bc83a.JPG)
