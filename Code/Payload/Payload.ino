@@ -15,7 +15,7 @@
 #include <SD.h>
 #include <TimeLib.h>
 
-#define SERIAL_MONITOR false
+#define SERIAL_MONITOR true
 #define SD_INSERTED true 
 #define START_RTD true
 #define START_IMU true 
@@ -79,13 +79,13 @@ bool Init_Imu(bool flag)
 {
   if (flag)
   {
-    // wait for Serial 
-    // remove !Serial code does not run when powered on unless connected to usb 
+    /*
     while(!Serial)
     {
       Serial.println("Waiting for Serial to initialize..."); 
       delay(1000);
     }
+    */
     
     Wire.begin();
     Wire.setClock(400000);
@@ -138,12 +138,14 @@ void Init_Sd_Card(bool flag)
   // wait for Serial Monitor to connect. Needed for native USB port boards only:
   if (flag)
   {
+    /* 
     // wait for serial to get ready 
     while (!Serial)
     {
       Serial.println("Waiting for SD card to initialize..."); 
       delay(1000);
     }
+    */
 
     // wait for SD card to get ready 
     while (!SD.begin(BUILTIN_SDCARD))
