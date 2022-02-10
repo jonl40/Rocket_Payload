@@ -14,11 +14,16 @@ ICM 20948 Arduino Library by Owen Lyke @ SparkFun Electronics  https://github.co
 Adafruit PT100/P1000 RTD Sensor w/MAX31865 library by Limor Fried/Ladyada @ Adafruit Industries  
 
 ## Set up
-https://www.arduino.cc/en/software  
-https://www.pjrc.com/teensy/td_download.html  
-In arduino ide under tools select manage libraries search and install Adafruit_MAX31865  
+https://www.arduino.cc/en/software    
+https://www.arduino.cc/en/Guide/Linux  
+https://playground.arduino.cc/Linux/All/#Permission  
+https://www.pjrc.com/teensy/td_download.html    
+In Arduino IDE Tools -> manage libraries search and install Adafruit_MAX31865  
 Install ICM-20948 https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary  
-Install Multithreading library https://github.com/ftrias/TeensyThreads  
+OR Install ICM-20948 with http://librarymanager/All#SparkFun_ICM_20948_IMU in IDE     
+Install Multithreading library https://github.com/ftrias/TeensyThreads    
+In Arduino IDE Tools -> Board -> Teensyduino -> Teensy 4.1  
+In Arduino IDE Tools -> Port -> "port connected to Teensy 4.1"    
 
 
 
