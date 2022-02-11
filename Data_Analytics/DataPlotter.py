@@ -25,10 +25,10 @@ class PayloadPlotter:
         self.datetime = datetime
 
         if imu_file: 
-            self.df_imu = pd.read_csv(self.imu_file)
+            self.df_imu = pd.read_csv(self.imu_file, engine='c', encoding='unicode_escape')
             
         if rtd_file:
-            self.df_rtd = pd.read_csv(self.rtd_file)
+            self.df_rtd = pd.read_csv(self.rtd_file, engine='c', encoding='unicode_escape')
         
         self.preprocess_df(datetime)
 
@@ -36,17 +36,31 @@ class PayloadPlotter:
     def preprocess_df(self, date):
         if self.imu_file: 
             # datetime to num, remove rows with header, drop blanks
-            self.df_imu[date] = pd.to_datetime(self.df_imu[date]) 
-            self.df_imu = self.df_imu[self.df_imu['Scaled_Acc_X_(mg)'] != 'Scaled_Acc_X_(mg)']
-            self.df_imu = self.df_imu.dropna()
+            self.df_imu = self.df_imu[self.df_imu[date] != date]
+            self.df_imu[date] = self.df_imu[date].str.strip()
+            self.df_imu[date] = pd.to_datetime(self.df_imu[date], errors='coerce') 
+            self.df_imu[self.df_imu.columns[1:]] = self.df_imu[self.df_imu.columns[1:]].apply(lambda x: pd.to_numeric(x, errors='coerce')).dropna()
+
+            # convert str to float 
+            for col in self.df_imu.columns[1:]:
+                #self.df_imu[col] = self.df_imu[col].str.strip()
+                self.df_imu[col] = self.df_imu[col].astype(float)
+
             print("\n==== IMU ===\n")
             print(self.df_imu.head())
         
         if self.rtd_file: 
             # datetime to num, remove rows with header, drop blanks
-            self.df_rtd[date] = pd.to_datetime(self.df_rtd[date]) 
-            self.df_rtd = self.df_rtd[self.df_rtd['RTD1_(C)'] != 'RTD1_(C)']
-            self.df_rtd = self.df_rtd.dropna()
+            self.df_rtd = self.df_rtd[self.df_rtd[date] != date]
+            self.df_rtd[date] = self.df_rtd[date].str.strip()
+            self.df_rtd[date] = pd.to_datetime(self.df_rtd[date], errors='coerce') 
+            self.df_rtd[self.df_rtd.columns[1:]] = self.df_rtd[self.df_rtd.columns[1:]].apply(lambda x: pd.to_numeric(x, errors='coerce')).dropna()
+
+            # convert str to float 
+            for col in self.df_rtd.columns[1:]:
+                #self.df_rtd[col] = self.df_rtd[col].str.strip()
+                self.df_rtd[col] = self.df_rtd[col].astype(float)
+
             print("\n==== RTD ===\n")
             print(self.df_rtd.head())
 
@@ -60,9 +74,8 @@ class PayloadPlotter:
 
     def imu_plot_all(self, title, xaxis, yaxis, pic_name=None):
         if self.imu_file:
-            imu_cols = self.df_imu.columns
-            for i in range(1, len(imu_cols)):
-                plt.plot(self.df_imu[xaxis], self.df_imu[imu_cols[i]], '-o', label=imu_cols[i])
+            for col in self.df_imu.columns[1:]:
+                plt.plot(self.df_imu[xaxis], self.df_imu[col].astype(float), '-o', label=col)
             plt.title(title)
             plt.xlabel(xaxis)
             plt.ylabel(yaxis)
@@ -91,7 +104,7 @@ class PayloadPlotter:
         for column in df:
             m = re.match(sensor_regex, column)
             if m is not None:
-                plt.plot(df[xaxis], df[m.group(0)], '-o', label=m.group(0))
+                plt.plot(df[xaxis], df[m.group(0)].astype(float), '-o', label=m.group(0))
 
         plt.title(title)
         plt.xlabel(xaxis)
@@ -107,11 +120,15 @@ def main():
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     grapher = PayloadPlotter(IMU_CSV, RTD_CSV, TIME)
+    #grapher = PayloadPlotter(IMU_CSV, None, TIME)
+    grapher.df_imu = grapher.df_imu[:500]
+    grapher.df_rtd = grapher.df_rtd[:100]
+    #print(grapher.df_imu.tail(1000))
 
     grapher.imu_plot_all("IMU sensors", TIME, "", "IMU_Sensors.png")
-    grapher.sensor_plot("imu", SCALED_ACC_RE, "IMU Scaled Acc (mg)", TIME, "Scaled Acc (mg)", "ACC.png")
-    grapher.sensor_plot("imu", GYR_RE, "IMU Gyr (DPS)", TIME, "Gyr (DPS)", "GYR.png")
-    grapher.sensor_plot("imu", MAG_RE, "IMU Mag (uT)", TIME, "Mag (uT)", "MAG.png")
+    #grapher.sensor_plot("imu", SCALED_ACC_RE, "IMU Scaled Acc (mg)", TIME, "Scaled Acc (mg)", "ACC.png")
+    #grapher.sensor_plot("imu", GYR_RE, "IMU Gyr (DPS)", TIME, "Gyr (DPS)", "GYR.png")
+    #grapher.sensor_plot("imu", MAG_RE, "IMU Mag (uT)", TIME, "Mag (uT)", "MAG.png")
     grapher.sensor_plot("rtd", RTD_RE, "RTD temperature (°C)", TIME, "Temperature (°C)", "RTD.png")
 
 
