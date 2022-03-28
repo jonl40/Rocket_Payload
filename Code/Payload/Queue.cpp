@@ -47,7 +47,7 @@ void Queue_rtd::enqueue(struct rtd temps)
 struct rtd Queue_rtd::dequeue()
 { 
   std::lock_guard<std::mutex> lock(m); // lock on creation
-  struct rtd temps = {-1,-1,-1,-1,true};
+  struct rtd temps = {"-1",-1,-1,-1,true};
 
   if(rear == -1 || front > rear)
   {
@@ -86,7 +86,7 @@ void Queue_imu::enqueue(struct imu sensor)
 struct imu Queue_imu::dequeue()
 {
   std::lock_guard<std::mutex> lock(m); // lock on creation
-  struct imu sensor = {-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,true};
+  struct imu sensor = {"-1",-1,-1,-1, -1,-1,-1, -1,-1,-1, -1,-1,-1, -1,true};
   if(rear == -1 || front > rear)
   {   
       // Serial.println("IMU QUEUE IS EMPTY!");

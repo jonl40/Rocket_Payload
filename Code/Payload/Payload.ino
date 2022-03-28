@@ -240,7 +240,8 @@ void PollIMU()
                           myICM.magX(),         // Mag
                           myICM.magY(),
                           myICM.magZ(),
-                          myICM.temp()};        // temp
+                          myICM.temp(),          // temp
+                          false};        
       imu_queue.enqueue(sensor);
       
       // serial plotter 
